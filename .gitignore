@@ -1,0 +1,11 @@
+# 饮食记录数据（个人隐私）
+data/food_log.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.python-version
+
+# macOS
+.DS_Store
