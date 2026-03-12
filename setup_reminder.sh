@@ -37,6 +37,19 @@ echo "⏰ 提醒时间：每天 ${HOUR}:$(printf "%02d" $MINUTE)"
 mkdir -p "$HOME/Library/LaunchAgents"
 mkdir -p "$HOME/Library/Logs"
 
+BRIEF_PATH="$SCRIPT_DIR/daily_brief.py"
+
+# 生成一个启动脚本，Terminal.app 打开后运行简报
+LAUNCHER="$SCRIPT_DIR/data/.launcher.sh"
+cat > "$LAUNCHER" <<LAUNCHER_EOF
+#!/bin/bash
+clear
+${PYTHON_BIN} "${BRIEF_PATH}"
+echo ""
+read -r -p "按 Enter 关闭..." _
+LAUNCHER_EOF
+chmod +x "$LAUNCHER"
+
 cat > "$PLIST_FILE" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
@@ -48,9 +61,11 @@ cat > "$PLIST_FILE" <<EOF
 
     <key>ProgramArguments</key>
     <array>
-        <string>${PYTHON_BIN}</string>
-        <string>${SCRIPT_PATH}</string>
-        <string>--notify</string>
+        <string>/usr/bin/osascript</string>
+        <string>-e</string>
+        <string>tell application "Terminal" to do script "${LAUNCHER}"</string>
+        <string>-e</string>
+        <string>tell application "Terminal" to activate</string>
     </array>
 
     <key>StartCalendarInterval</key>
@@ -82,7 +97,7 @@ if launchctl list | grep -q "$PLIST_LABEL"; then
     echo "✅ 每日健身提醒已设置！"
     echo "   每天 ${HOUR}:$(printf "%02d" $MINUTE) 会弹出系统通知告诉你今天练什么"
     echo ""
-    echo "   立即测试通知：python3 \"$SCRIPT_PATH\" --notify"
+    echo "   立即测试简报：python3 \"$BRIEF_PATH\""
     echo "   卸载提醒：    bash \"$SCRIPT_DIR/setup_reminder.sh\" remove"
 else
     echo "⚠️  加载失败，请检查系统设置 > 隐私与安全 > 通知是否已授权终端"
