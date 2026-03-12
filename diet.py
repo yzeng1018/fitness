@@ -284,7 +284,14 @@ def progress_bar(current: int, target: int, width: int = 28) -> str:
     return f"{color}{bar}{R} {B}{pct}%{R}"
 
 def day_calorie_total(day_log: dict) -> int:
-    return sum(m.get("calories", 0) for m in day_log.values())
+    return sum(
+        v.get("calories", 0)
+        for k, v in day_log.items()
+        if k != "activity" and isinstance(v, dict)
+    )
+
+def day_activity_list(day_log: dict) -> list:
+    return day_log.get("activity", [])
 
 def is_workout_day(weekday: int) -> bool:
     return SCHEDULE[weekday] == "workout"
@@ -331,6 +338,20 @@ def show_today(log: dict):
             for food in foods:
                 print(f"    {DIM}· {food}{R}")
         print()
+
+    # 今日运动记录
+    activities = day_activity_list(logged)
+    if activities:
+        sep("─")
+        print()
+        print(f"{B}{BLU}【今日运动记录】{R}\n")
+        total_burned = 0
+        for a in activities:
+            burned = a.get("kcal_burned", 0)
+            total_burned += burned
+            print(f"  {GRN}✓{R} {B}{a['name']}{R}  {a['duration_min']}分钟  "
+                  f"{DIM}{a['intensity']}{R}  消耗 ~{burned}kcal")
+        print(f"\n  {DIM}今日额外消耗：~{total_burned}kcal{R}\n")
 
     # 当日热量进度
     sep("─")
@@ -507,6 +528,11 @@ def show_history(log: dict):
             entry = day_log.get(key)
             if entry:
                 print(f"    {GRN}·{R} {cn}：{entry['foods']}  {DIM}{entry['calories']}kcal{R}")
+
+        activities = day_activity_list(day_log)
+        for a in activities:
+            print(f"    {BLU}♦{R} 运动：{a['name']} {a['duration_min']}分钟（{a['intensity']}）  "
+                  f"{DIM}消耗~{a.get('kcal_burned',0)}kcal{R}")
 
         bar = progress_bar(eaten, target, width=22)
         diff = eaten - target
