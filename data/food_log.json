@@ -3,10 +3,7 @@
     "breakfast": {
       "foods": "年轮蛋糕 70g（1670kJ/100g）",
       "calories": 279
-    },
-    "activity": [
-      {"name": "遛狗", "duration_min": 30, "intensity": "散步", "kcal_burned": 80}
-    ]
+    }
   },
   "2026-03-11": {
     "breakfast": {

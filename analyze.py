@@ -23,8 +23,9 @@ CYN = "\033[96m"
 RED = "\033[91m"
 
 # ─── 配置（与 diet.py 一致）──────────────────────────────────────────────────
-DATA_DIR    = os.path.join(os.path.dirname(__file__), "data")
-LOG_FILE    = os.path.join(DATA_DIR, "food_log.json")
+DATA_DIR       = os.path.join(os.path.dirname(__file__), "data")
+LOG_FILE       = os.path.join(DATA_DIR, "food_log.json")
+FIXED_ACT_FILE = os.path.join(DATA_DIR, "fixed_activities.json")
 CAL_WORKOUT = 2300
 CAL_REST    = 2000
 SCHEDULE    = {0: "workout", 1: "workout", 2: "rest",
@@ -39,6 +40,12 @@ def load_log() -> dict:
         return {}
     with open(LOG_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
+
+def load_fixed_activities() -> list:
+    if not os.path.exists(FIXED_ACT_FILE):
+        return []
+    with open(FIXED_ACT_FILE, "r", encoding="utf-8") as f:
+        return json.load(f).get("activities", [])
 
 def day_target(weekday: int) -> int:
     return CAL_WORKOUT if SCHEDULE[weekday] == "workout" else CAL_REST
@@ -88,6 +95,9 @@ def analyze(days: int = 7):
     today = date.today()
 
     # 收集区间数据
+    fixed_acts        = load_fixed_activities()
+    fixed_daily_burn  = sum(a.get("kcal_burned", 0) for a in fixed_acts)
+
     records = []
     for i in range(days - 1, -1, -1):
         d       = today - timedelta(days=i)
@@ -95,17 +105,20 @@ def analyze(days: int = 7):
         key     = d.isoformat()
         dlog    = log.get(key, {})
         intake  = food_calories(dlog)
-        burned  = activity_burned(dlog)
+        extra_b = activity_burned(dlog)
+        total_b = fixed_daily_burn + extra_b
         target  = day_target(weekday)
         records.append({
-            "date":       d,
-            "weekday":    weekday,
-            "target":     target,
-            "intake":     intake,
-            "burned":     burned,
-            "net":        intake - burned,
-            "activities": activity_list(dlog),
-            "logged":     bool(dlog),
+            "date":        d,
+            "weekday":     weekday,
+            "target":      target,
+            "intake":      intake,
+            "burned":      total_b,
+            "fixed_burn":  fixed_daily_burn,
+            "extra_burn":  extra_b,
+            "net":         intake - total_b,
+            "activities":  activity_list(dlog),
+            "logged":      bool(dlog),
         })
 
     recorded = [r for r in records if r["logged"]]
@@ -150,7 +163,9 @@ def analyze(days: int = 7):
         else:
             diff_str = f"{GRN}≈达标{R}"
 
-        burned_str = f"  {DIM}运动消耗-{burned}kcal → 净{net}kcal{R}" if burned else ""
+        burned = r["burned"]
+        net    = r["net"]
+        burned_str = f"  {DIM}消耗-{burned}kcal（固定{r['fixed_burn']}+额外{r['extra_burn']}）→ 净{net}kcal{R}" if burned else ""
         print(f"  {bd}{d.strftime('%m/%d')} {DAY_CN[r['weekday']]}{R}  "
               f"{b} {B}{pct}%{R}  {intake}/{target}  {diff_str}{burned_str}{marker}")
 
@@ -167,6 +182,7 @@ def analyze(days: int = 7):
         avg_intake  = sum(r["intake"] for r in recorded) / n_rec
         avg_target  = sum(r["target"] for r in recorded) / n_rec
         total_burned = sum(r["burned"] for r in records)
+        avg_net      = sum(r["net"] for r in recorded) / n_rec
         adherence   = sum(1 for r in recorded if abs(r["intake"] - r["target"]) <= 200) / n_rec * 100
         t_arrow     = trend_arrow(intake_vals)
 
@@ -176,24 +192,37 @@ def analyze(days: int = 7):
               f"{DIM}（目标均值 {'%.0f' % avg_target}kcal）{R}{t_arrow}")
         print(f"  热量达标天数    {B}{sum(1 for r in recorded if abs(r['intake']-r['target'])<=200)}{R} 天  "
               f"{DIM}（误差±200kcal内）{R}")
-        print(f"  总额外运动消耗  {B}{total_burned}{R} kcal")
+        print(f"  总运动消耗      {B}{total_burned}{R} kcal  "
+              f"{DIM}（固定{fixed_daily_burn*n_rec} + 额外{total_burned - fixed_daily_burn*n_rec}）{R}")
+        print(f"  日均净摄入      {B}{'%.0f' % avg_net}{R} kcal  "
+              f"{DIM}（摄入 - 运动消耗）{R}")
         print()
 
     # ── 3. 运动记录 ──────────────────────────────────────────────────────────
-    all_activities = [(r["date"], a) for r in records for a in r["activities"]]
     sep("─")
     print()
     print(f"{B}{BLU}【运动记录】{R}\n")
 
-    if not all_activities:
-        print(f"  {DIM}暂无额外运动记录{R}\n")
-    else:
-        for d, a in all_activities:
-            print(f"  {GRN}♦{R} {d.strftime('%m/%d')} {DAY_CN[d.weekday()]}  "
+    # 固定运动
+    print(f"  {DIM}── 每日固定运动（自动计入）───────────────{R}")
+    for a in fixed_acts:
+        print(f"  {BLU}●{R} {a['name']}  {a['duration_min']}分钟  {DIM}{a['intensity']}{R}  "
+              f"~{a['kcal_burned']}kcal/天")
+    print(f"  {DIM}固定运动合计：~{fixed_daily_burn}kcal/天  ×{days}天 = ~{fixed_daily_burn*days}kcal{R}\n")
+
+    # 额外运动
+    all_extra = [(r["date"], a) for r in records for a in r["activities"]]
+    if all_extra:
+        print(f"  {DIM}── 额外运动记录 ─────────────────────{R}")
+        for d, a in all_extra:
+            print(f"  {GRN}✓{R} {d.strftime('%m/%d')} {DAY_CN[d.weekday()]}  "
                   f"{B}{a['name']}{R}  {a['duration_min']}分钟  "
-                  f"{DIM}{a['intensity']}{R}  消耗 ~{a.get('kcal_burned',0)}kcal")
-        total_min = sum(a.get("duration_min", 0) for _, a in all_activities)
-        print(f"\n  {DIM}区间累计运动时长：{total_min} 分钟{R}\n")
+                  f"{DIM}{a['intensity']}{R}  ~{a.get('kcal_burned',0)}kcal")
+        extra_min = sum(a.get("duration_min", 0) for _, a in all_extra)
+        print(f"  {DIM}额外运动累计：{extra_min} 分钟{R}")
+    else:
+        print(f"  {DIM}── 暂无额外运动记录 ─────────────────{R}")
+    print()
 
     # ── 4. 分析洞察 ──────────────────────────────────────────────────────────
     sep("─")

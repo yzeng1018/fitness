@@ -1,0 +1,9 @@
+{
+  "note": "每日固定运动，自动计入所有天的消耗统计",
+  "activities": [
+    {"name": "遛狗（早）", "duration_min": 30, "intensity": "散步", "kcal_burned": 90},
+    {"name": "遛狗（晚）", "duration_min": 30, "intensity": "散步", "kcal_burned": 90},
+    {"name": "步行上班",   "duration_min": 20, "intensity": "步行", "kcal_burned": 75},
+    {"name": "步行回家",   "duration_min": 20, "intensity": "步行", "kcal_burned": 75}
+  ]
+}

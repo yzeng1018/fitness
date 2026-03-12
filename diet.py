@@ -25,8 +25,9 @@ CYN = "\033[96m"
 RED = "\033[91m"
 
 # ─── 数据文件 ─────────────────────────────────────────────────────────────────
-DATA_DIR  = os.path.join(os.path.dirname(__file__), "data")
-LOG_FILE  = os.path.join(DATA_DIR, "food_log.json")
+DATA_DIR       = os.path.join(os.path.dirname(__file__), "data")
+LOG_FILE       = os.path.join(DATA_DIR, "food_log.json")
+FIXED_ACT_FILE = os.path.join(DATA_DIR, "fixed_activities.json")
 
 # ─── 用户目标（与 fitness.py 保持一致）────────────────────────────────────────
 CAL_WORKOUT = 2300
@@ -264,6 +265,12 @@ def save_log(log: dict):
     with open(LOG_FILE, "w", encoding="utf-8") as f:
         json.dump(log, f, ensure_ascii=False, indent=2)
 
+def load_fixed_activities() -> list:
+    if not os.path.exists(FIXED_ACT_FILE):
+        return []
+    with open(FIXED_ACT_FILE, "r", encoding="utf-8") as f:
+        return json.load(f).get("activities", [])
+
 def today_str() -> str:
     return date.today().isoformat()
 
@@ -340,18 +347,25 @@ def show_today(log: dict):
         print()
 
     # 今日运动记录
-    activities = day_activity_list(logged)
-    if activities:
-        sep("─")
-        print()
-        print(f"{B}{BLU}【今日运动记录】{R}\n")
-        total_burned = 0
-        for a in activities:
-            burned = a.get("kcal_burned", 0)
-            total_burned += burned
+    fixed_acts   = load_fixed_activities()
+    extra_acts   = day_activity_list(logged)
+    fixed_burned = sum(a.get("kcal_burned", 0) for a in fixed_acts)
+    extra_burned = sum(a.get("kcal_burned", 0) for a in extra_acts)
+    total_burned = fixed_burned + extra_burned
+
+    sep("─")
+    print()
+    print(f"{B}{BLU}【今日运动】{R}\n")
+    print(f"  {DIM}── 固定运动（每日）─────────────────────{R}")
+    for a in fixed_acts:
+        print(f"  {BLU}●{R} {a['name']}  {a['duration_min']}分钟  "
+              f"{DIM}{a['intensity']}{R}  ~{a['kcal_burned']}kcal")
+    if extra_acts:
+        print(f"  {DIM}── 额外运动 ─────────────────────────{R}")
+        for a in extra_acts:
             print(f"  {GRN}✓{R} {B}{a['name']}{R}  {a['duration_min']}分钟  "
-                  f"{DIM}{a['intensity']}{R}  消耗 ~{burned}kcal")
-        print(f"\n  {DIM}今日额外消耗：~{total_burned}kcal{R}\n")
+                  f"{DIM}{a['intensity']}{R}  ~{a.get('kcal_burned',0)}kcal")
+    print(f"\n  {DIM}今日运动消耗合计：~{total_burned}kcal（固定{fixed_burned} + 额外{extra_burned}）{R}\n")
 
     # 当日热量进度
     sep("─")
@@ -366,6 +380,8 @@ def show_today(log: dict):
         print(f"  {GRN}完美达标！{R}")
     else:
         print(f"  {YEL}已超出目标 {-remaining} kcal{R}")
+    net = eaten - total_burned
+    print(f"  {DIM}净摄入（扣除运动消耗）：{net} kcal{R}")
     print()
 
     sep("─")
@@ -529,10 +545,14 @@ def show_history(log: dict):
             if entry:
                 print(f"    {GRN}·{R} {cn}：{entry['foods']}  {DIM}{entry['calories']}kcal{R}")
 
-        activities = day_activity_list(day_log)
-        for a in activities:
+        fixed_acts   = load_fixed_activities()
+        fixed_burned = sum(a.get("kcal_burned", 0) for a in fixed_acts)
+        extra_acts   = day_activity_list(day_log)
+        for a in extra_acts:
             print(f"    {BLU}♦{R} 运动：{a['name']} {a['duration_min']}分钟（{a['intensity']}）  "
                   f"{DIM}消耗~{a.get('kcal_burned',0)}kcal{R}")
+        total_burned = fixed_burned + sum(a.get("kcal_burned",0) for a in extra_acts)
+        print(f"    {DIM}运动消耗：~{total_burned}kcal（固定{fixed_burned}）{R}")
 
         bar = progress_bar(eaten, target, width=22)
         diff = eaten - target
