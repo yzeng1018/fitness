@@ -1,8 +1,70 @@
 {
+  "2026-03-18": {
+    "breakfast": {
+      "foods": "Bagel 1个、椰子水 1瓶",
+      "calories": 320
+    },
+    "lunch": {
+      "foods": "清汤火锅（牛肉、鱼豆腐、菠菜少量、黑豆腐）",
+      "calories": 575
+    }
+  },
+  "2026-03-16": {
+    "breakfast": {
+      "foods": "Bagel 1个",
+      "calories": 280
+    },
+    "lunch": {
+      "foods": "青瓜炒肉、小米粥1碗、蓝莓少量",
+      "calories": 530
+    },
+    "dinner": {
+      "foods": "羊肉火锅（计划）",
+      "calories": 850
+    },
+    "activity": [
+      {"name": "遛狗", "duration_min": 15, "intensity": "散步", "kcal_burned": 35},
+      {"name": "遛狗", "duration_min": 15, "intensity": "散步", "kcal_burned": 35},
+      {"name": "遛狗", "duration_min": 15, "intensity": "散步", "kcal_burned": 35},
+      {"name": "站立办公", "duration_min": 60, "intensity": "站立", "kcal_burned": 50}
+    ]
+  },
+  "2026-03-15": {
+    "breakfast": {
+      "foods": "Bagel 1个",
+      "calories": 280
+    },
+    "lunch": {
+      "foods": "越南米粉1碗（生菜、牛丸）",
+      "calories": 550
+    }
+  },
+  "2026-03-14": {
+    "breakfast": {
+      "foods": "Bagel 1个",
+      "calories": 280
+    },
+    "lunch": {
+      "foods": "牛排、虾",
+      "calories": 700
+    },
+    "dinner": {
+      "foods": "冬阴功、蒜苗炒肉、西葫芦蛋饼1个",
+      "calories": 750
+    }
+  },
   "2026-03-13": {
     "breakfast": {
-      "foods": "蒸饺 6个、酱肉包 1个、美式咖啡 1杯",
-      "calories": 555
+      "foods": "蒸饺6个、酱香包1个、美式咖啡1杯",
+      "calories": 530
+    },
+    "lunch": {
+      "foods": "湖南菜：辣椒炒肉、猪耳朵香干、莲藕排骨汤、红薯菜、米饭1碗",
+      "calories": 1100
+    },
+    "dinner": {
+      "foods": "超级碗套餐（三文鱼、黑豆浆、混合烤蔬菜、苹果莎莎、谷物）",
+      "calories": 650
     }
   },
   "2026-03-12": {
@@ -13,7 +75,17 @@
     "lunch": {
       "foods": "超级碗套餐：三文鱼、黑豆浆、混合烤蔬菜、苹果莎莎、谷物",
       "calories": 650
-    }
+    },
+    "dinner": {
+      "foods": "虾8只、日本豆腐6块、西兰花、烤蔬菜、玉米少量",
+      "calories": 800
+    },
+    "activity": [
+      {"name": "遛狗（额外）", "duration_min": 10, "intensity": "散步", "kcal_burned": 30},
+      {"name": "步行回家（午休）", "duration_min": 20, "intensity": "步行", "kcal_burned": 75},
+      {"name": "步行返公司（午休后）", "duration_min": 20, "intensity": "步行", "kcal_burned": 75},
+      {"name": "健身房力量训练（腿+胸）", "duration_min": 80, "intensity": "力量训练", "kcal_burned": 200}
+    ]
   },
   "2026-03-11": {
     "breakfast": {
