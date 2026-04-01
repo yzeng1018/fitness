@@ -4,6 +4,8 @@
 用法：
   python3 diet.py              查看今日饮食计划 + 已记录情况
   python3 diet.py --log        记录一餐（交互输入）
+  python3 diet.py --weight     记录今日体重
+  python3 diet.py --progress   查看体重变化趋势
   python3 diet.py --week       本周饮食计划一览
   python3 diet.py --history    查看最近7天记录
 """
@@ -25,16 +27,19 @@ CYN = "\033[96m"
 RED = "\033[91m"
 
 # ─── 数据文件 ─────────────────────────────────────────────────────────────────
-DATA_DIR       = os.path.join(os.path.dirname(__file__), "data")
-LOG_FILE       = os.path.join(DATA_DIR, "food_log.json")
-FIXED_ACT_FILE = os.path.join(DATA_DIR, "fixed_activities.json")
+DATA_DIR        = os.path.join(os.path.dirname(__file__), "data")
+LOG_FILE        = os.path.join(DATA_DIR, "food_log.json")
+WEIGHT_FILE     = os.path.join(DATA_DIR, "weight_log.json")
+FIXED_ACT_FILE  = os.path.join(DATA_DIR, "fixed_activities.json")
 
 # ─── 用户目标（与 fitness.py 保持一致）────────────────────────────────────────
-# 68kg, 170cm, 38岁男性 | 减脂目标 | 轻度脂肪肝
-# TDEE ≈ 2415 kcal，制造 ~500-600 kcal 缺口
-CAL_WORKOUT = 1900   # 训练日
-CAL_REST    = 1700   # 休息日
-PROTEIN_G   = 140    # 2g/kg，减脂期保肌
+# 当前 72kg → 目标 65kg | 170cm, 38岁男性 | 减脂目标 | 轻度脂肪肝
+# TDEE ≈ 2476 kcal，制造 ~500-600 kcal 缺口
+WEIGHT_CURRENT = 72   # kg（当前体重）
+WEIGHT_GOAL    = 65   # kg（目标体重）
+CAL_WORKOUT = 1950   # 训练日
+CAL_REST    = 1750   # 休息日
+PROTEIN_G   = 144    # 2g/kg，减脂期保肌
 FAT_G       = 55     # 优先不饱和脂肪（橄榄油、深海鱼、坚果）
 
 # 脂肪肝重点禁忌（用于提示）
@@ -287,6 +292,18 @@ def today_str() -> str:
 def get_day_log(log: dict, day: str) -> dict:
     return log.get(day, {})
 
+def load_weight_log() -> dict:
+    os.makedirs(DATA_DIR, exist_ok=True)
+    if not os.path.exists(WEIGHT_FILE):
+        return {}
+    with open(WEIGHT_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def save_weight_log(wlog: dict):
+    os.makedirs(DATA_DIR, exist_ok=True)
+    with open(WEIGHT_FILE, "w", encoding="utf-8") as f:
+        json.dump(wlog, f, ensure_ascii=False, indent=2)
+
 
 # ─── 工具函数 ─────────────────────────────────────────────────────────────────
 def sep(char="═", n=54):
@@ -325,11 +342,20 @@ def show_today(log: dict):
     day_type = "训练日" if is_workout_day(weekday) else "休息日"
     workout_label = WORKOUT_NAME[weekday]
 
+    wlog = load_weight_log()
+    latest_weight = wlog.get(today_str())
+    if not latest_weight and wlog:
+        latest_weight = wlog[sorted(wlog.keys())[-1]]
+    remaining_kg  = round((latest_weight or WEIGHT_CURRENT) - WEIGHT_GOAL, 1)
+
     sep()
     print(f"{B}{CYN}  🥗 饮食管理{R}                         {DIM}v1.0{R}")
     sep()
     print(f"  {B}今天：{R}{today.strftime('%Y年%m月%d日')} {B}{DAY_CN[weekday]}{R}  "
           f"{DIM}({day_type} · {workout_label}){R}")
+    weight_str = f"{latest_weight}kg" if latest_weight else f"~{WEIGHT_CURRENT}kg"
+    print(f"  体重：{B}{weight_str}{R}  目标 {GRN}{WEIGHT_GOAL}kg{R}  "
+          f"{DIM}还差 {remaining_kg}kg{R}")
     print(f"  热量目标：{B}{target} kcal{R}   "
           f"蛋白质 {GRN}{PROTEIN_G}g{R} · 碳水 {YEL}{(target - PROTEIN_G*4 - FAT_G*9)//4}g{R} · "
           f"脂肪 {RED}{FAT_G}g{R}")
@@ -585,6 +611,110 @@ def show_history(log: dict):
     print()
 
 
+# ─── 体重记录 ─────────────────────────────────────────────────────────────────
+def log_weight(wlog: dict) -> dict:
+    today = date.today()
+    print()
+    sep()
+    print(f"{B}{CYN}  ⚖️  记录体重{R}  {DIM}{today.strftime('%Y年%m月%d日')}{R}")
+    sep()
+
+    # 显示上次记录
+    if wlog:
+        last_date = sorted(wlog.keys())[-1]
+        last_kg   = wlog[last_date]
+        print(f"\n  上次记录：{DIM}{last_date}{R}  {B}{last_kg} kg{R}")
+
+    print(f"\n  {B}输入今日体重（kg）：{R}")
+    raw = input("  > ").strip()
+    try:
+        kg = float(raw)
+    except ValueError:
+        print(f"  {RED}格式无效，已取消{R}")
+        return wlog
+
+    today_key = today_str()
+    prev_kg   = wlog.get(today_key)
+    wlog[today_key] = kg
+    save_weight_log(wlog)
+
+    remaining = round(kg - WEIGHT_GOAL, 1)
+    print(f"\n  {GRN}✓ 已记录：{B}{kg} kg{R}")
+    if prev_kg and prev_kg != kg:
+        diff = round(kg - prev_kg, 1)
+        arrow = f"{GRN}↓{diff:+.1f}{R}" if diff < 0 else f"{RED}↑{diff:+.1f}{R}"
+        print(f"  较上次变化：{arrow} kg")
+    print(f"  距目标 {WEIGHT_GOAL}kg：还差 {B}{remaining} kg{R}")
+    print()
+    sep()
+    print()
+    return wlog
+
+
+def show_weight_progress(wlog: dict):
+    sep()
+    print(f"{B}{CYN}  📉 体重变化趋势{R}  {DIM}目标 {WEIGHT_GOAL}kg{R}")
+    sep()
+    print()
+
+    if not wlog:
+        print(f"  {DIM}还没有体重记录，先用 --weight 记录吧！{R}\n")
+        sep()
+        return
+
+    sorted_dates = sorted(wlog.keys())
+    first_kg     = wlog[sorted_dates[0]]
+    latest_kg    = wlog[sorted_dates[-1]]
+    total_lost   = round(first_kg - latest_kg, 1)
+    remaining    = round(latest_kg - WEIGHT_GOAL, 1)
+
+    print(f"  起始：{B}{first_kg} kg{R}  ({sorted_dates[0]})")
+    print(f"  当前：{B}{latest_kg} kg{R}  ({sorted_dates[-1]})")
+    color = GRN if total_lost > 0 else RED
+    print(f"  累计变化：{color}{'-' if total_lost > 0 else '+'}{abs(total_lost)} kg{R}")
+    print(f"  距目标：还差 {B}{remaining} kg{R}")
+    print()
+
+    # 图表（最近30条）
+    recent = sorted_dates[-30:]
+    if len(recent) > 1:
+        min_kg = min(wlog[d] for d in recent)
+        max_kg = max(wlog[d] for d in recent)
+        span   = max_kg - min_kg if max_kg != min_kg else 1.0
+        bar_w  = 30
+
+        print(f"  {DIM}── 最近记录 ({'最近'+str(len(recent))+'次' if len(recent)>1 else ''}) ─────────────────{R}")
+        for d in recent:
+            kg     = wlog[d]
+            filled = int((kg - min_kg) / span * bar_w)
+            bar    = "█" * filled + "░" * (bar_w - filled)
+            diff_str = ""
+            idx = recent.index(d)
+            if idx > 0:
+                prev = wlog[recent[idx - 1]]
+                diff = round(kg - prev, 1)
+                diff_str = f"  {GRN}{diff:+.1f}{R}" if diff < 0 else (f"  {RED}{diff:+.1f}{R}" if diff > 0 else "")
+            print(f"  {DIM}{d}{R}  {B}{kg:5.1f}kg{R}  {CYN}{bar}{R}{diff_str}")
+        print()
+
+    # 每周平均
+    if len(sorted_dates) >= 7:
+        print(f"  {DIM}── 每周均值 ─────────────────────────{R}")
+        from datetime import datetime
+        weeks: dict = {}
+        for d in sorted_dates:
+            dt  = datetime.strptime(d, "%Y-%m-%d")
+            wk  = dt.strftime("%Y-W%W")
+            weeks.setdefault(wk, []).append(wlog[d])
+        for wk, vals in sorted(weeks.items())[-8:]:
+            avg = round(sum(vals) / len(vals), 1)
+            print(f"  {DIM}{wk}{R}  均值 {B}{avg} kg{R}  ({len(vals)}次)")
+        print()
+
+    sep()
+    print()
+
+
 # ─── 主程序 ───────────────────────────────────────────────────────────────────
 def main():
     args = sys.argv[1:]
@@ -592,6 +722,12 @@ def main():
 
     if "--log" in args or "-l" in args:
         log = log_meal(log)
+    elif "--weight" in args:
+        wlog = load_weight_log()
+        log_weight(wlog)
+    elif "--progress" in args or "-p" in args:
+        wlog = load_weight_log()
+        show_weight_progress(wlog)
     elif "--week" in args or "-w" in args:
         show_week(log)
     elif "--history" in args or "-h" in args:

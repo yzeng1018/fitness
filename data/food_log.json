@@ -1,4 +1,40 @@
 {
+  "2026-03-27": {
+    "sleep": {
+      "note": "凌晨4点醒，7点入睡，10:30起床，有效睡眠约3.5h"
+    },
+    "lunch": {
+      "foods": "泰式打泡饭、薯条、咖啡",
+      "calories": 900
+    }
+  },
+  "2026-03-26": {
+    "breakfast": {
+      "foods": "燕麦片1碗",
+      "calories": 180
+    },
+    "lunch": {
+      "foods": "清汤火锅（牛肉、虾滑、蔬菜菌菇）",
+      "calories": 550
+    },
+    "activity": [
+      {"name": "健身房力量训练", "duration_min": 60, "intensity": "中高强度", "kcal_burned": 320}
+    ]
+  },
+  "2026-03-25": {
+    "breakfast": {
+      "foods": "Bagel 1个、美式牛奶（拿铁）1杯",
+      "calories": 380
+    },
+    "lunch": {
+      "foods": "自制蔬菜沙拉（混合蔬菜）",
+      "calories": 280
+    },
+    "dinner": {
+      "foods": "麻辣烫（碳水为主：粉丝/面条，搭配蔬菜，口味偏重）",
+      "calories": 800
+    }
+  },
   "2026-03-18": {
     "breakfast": {
       "foods": "Bagel 1个、椰子水 1瓶",
