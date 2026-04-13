@@ -1,4 +1,65 @@
 {
+  "2026-04-12": {
+    "lunch": {
+      "foods": "火腿牛角包",
+      "calories": 420
+    },
+    "dinner": {
+      "foods": "小锅米线",
+      "calories": 650
+    },
+    "activity": []
+  },
+  "2026-04-13": {
+    "breakfast": {
+      "foods": "鳗鱼鸡蛋牛角包",
+      "calories": 480
+    }
+  },
+  "2026-04-10": {
+    "breakfast": {
+      "foods": "煎蛋1个、小米粥1碗",
+      "calories": 280
+    },
+    "lunch": {
+      "foods": "辣椒猪肝、炒白菜、海带丸子汤、杂粮饭1碗（湖南菜）",
+      "calories": 700
+    }
+  },
+  "2026-04-09": {
+    "breakfast": {
+      "foods": "燕麦片",
+      "calories": 300
+    },
+    "lunch": {
+      "foods": "虾、粉丝、菜叶、香干",
+      "calories": 550
+    },
+    "dinner": {
+      "foods": "Wagas 牛肉、西兰花、辣白菜、健康米饭",
+      "calories": 650
+    },
+    "activity": [
+      {"name": "遛狗", "duration_min": 30, "intensity": "散步", "kcal_burned": 90}
+    ]
+  },
+  "2026-04-08": {
+    "breakfast": {
+      "foods": "燕麦片、苹果1个",
+      "calories": 380
+    },
+    "lunch": {
+      "foods": "椰子鸡火锅（鸡肉、蔬菜、椰汁汤底），8分饱",
+      "calories": 900
+    },
+    "dinner": {
+      "foods": "Wagas 蜂蜜芥末三文鱼（配红绿番茄）",
+      "calories": 650
+    },
+    "activity": [
+      {"name": "健身房力量训练（胸部+手臂+仰卧起坐）", "duration_min": 90, "intensity": "力量训练", "kcal_burned": 320}
+    ]
+  },
   "2026-03-27": {
     "sleep": {
       "note": "凌晨4点醒，7点入睡，10:30起床，有效睡眠约3.5h"
