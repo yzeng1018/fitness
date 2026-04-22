@@ -1,4 +1,63 @@
 {
+  "2026-04-22": {
+    "breakfast": {
+      "foods": "水煮蛋1个、燕麦片适量、樱桃和蓝莓适量",
+      "calories": 350
+    },
+    "lunch": {
+      "foods": "赛百味1.5个（金枪鱼+鸡蛋+肉）",
+      "calories": 800
+    },
+    "dinner": {
+      "foods": "左庭右院牛肉汤：65g牛肉、2段玉米、50g冬瓜、35g豆腐、4片莴笋、50g金针菇、50g土豆片、30g娃娃菜、30g青菜、魔芋丝5个、2个鹌鹑蛋、2个牛肉丸、1个梅干菜牛肉饼",
+      "calories": 780
+    },
+    "activity": [
+      {
+        "name": "健身房力量训练（腿部+肩部）",
+        "duration_min": 85,
+        "intensity": "力量训练",
+        "kcal_burned": 420,
+        "notes": "腿部：器械4个×3组（坐式蹬腿~40kg、髋外展~55kg等）+ 20kg固定杠铃深蹲3组；肩部：坐式推肩机25kg + 哑铃3-4个动作×3组；仰卧起坐3组"
+      }
+    ]
+  },
+  "2026-04-21": {
+    "lunch": {
+      "foods": "Wagas 三文鱼谷物碗（绿叶菜）、核桃少量",
+      "calories": 750
+    },
+    "dinner": {
+      "foods": "大米先生：香肩肌肉、腐竹鸡蛋、青菜、糙米饭",
+      "calories": 650
+    }
+  },
+  "2026-04-20": {
+    "breakfast": {
+      "foods": "鸡蛋2个、燕麦片1碗、美式咖啡1杯、苹果1个",
+      "calories": 525
+    },
+    "lunch": {
+      "foods": "虾粉丝煲仔饭",
+      "calories": 650
+    },
+    "dinner": {
+      "foods": "腊排骨、辣椒炒人参、丝瓜（湖南菜，七分饱）",
+      "calories": 600
+    },
+    "activity": [
+      {"name": "健身房力量训练（胸+背+腹部）", "duration_min": 90, "intensity": "力量训练", "kcal_burned": 350}
+    ]
+  },
+  "2026-04-15": {
+    "breakfast": {
+      "foods": "燕麦片",
+      "calories": 300
+    },
+    "activity": [
+      {"name": "健身房力量训练（胸+手臂+肩）", "duration_min": 60, "intensity": "力量训练", "kcal_burned": 250}
+    ]
+  },
   "2026-04-12": {
     "lunch": {
       "foods": "火腿牛角包",
